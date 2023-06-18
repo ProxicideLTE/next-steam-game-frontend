@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #1B2838;
+  color: #ffffffd3;
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+}
+
+a {
+  color: #67c1f5;
+  text-decoration: underline;
+  transition: color 0.25s ease-in;
+
+
+  &:hover {
+    color: #FF4500; 
+  }
+}

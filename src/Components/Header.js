@@ -1,7 +1,25 @@
 import React from 'react'
+import { googleLogout } from '@react-oauth/google'
+import { useNavigate } from 'react-router-dom'
+
+import storage from '../util/util.local-storage'
 
 const Header = () => {
-  return <header></header>
+  const navigate = useNavigate()
+
+  const onLogout = () => {
+    googleLogout()
+    storage.clearSession()
+    navigate('/')
+  }
+
+  return (
+    <header className="p-[20px] border-b-[1px]">
+      <nav>
+        <button onClick={onLogout}>Logout</button>
+      </nav>
+    </header>
+  )
 }
 
 export default Header

@@ -1,22 +1,26 @@
-import axios from 'axios'
-import { useGoogleLogin } from '@react-oauth/google'
 import { useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
-import { login } from './../Data/user'
+import { useGoogleLogin } from '@react-oauth/google'
+import axios from 'axios'
+
+import './Login.scss'
+import storage from './../util/util.local-storage'
 
 const GOOGLE_API_HOST = 'https://www.googleapis.com/oauth2/v1/userinfo'
-
-const createNewUser = async (userData) => {
-  axios
-    .post(`${process.env.REACT_APP_BACKEND_API}/user/`, userData)
-    .then((response) => {
-      return new Promise((resolve) => resolve())
-    })
-}
+const PARTICLES_COUNT = 100
 
 const Login = () => {
   const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const particles = []
+
+  document.querySelector('body').classList.add('login')
+
+  for (let i = 0; i < PARTICLES_COUNT; i++) {
+    particles.push(
+      <div class="circle-container">
+        <div class="circle"></div>
+      </div>
+    )
+  }
 
   const onLoginClicked = useGoogleLogin({
     onSuccess: (response) => {
@@ -27,18 +31,10 @@ const Login = () => {
           `${GOOGLE_API_HOST}?alt=json&access_token=${response.access_token}`
         )
         .then(({ data }) => {
-          console.log(data)
-          dispatch(login(data))
           userID = data.id
           userEmail = data.email
 
-          localStorage.setItem(
-            'google-account',
-            JSON.stringify({
-              id: userID,
-              email: userEmail,
-            })
-          )
+          storage.storeUserID(userID)
 
           return axios.get(
             `${process.env.REACT_APP_BACKEND_API}/user/${userID}`
@@ -52,7 +48,7 @@ const Login = () => {
             })
 
             navigate('/link-steam')
-          } else if (!data.steam_id && !data.name) {
+          } else if (!data[0].steam_id && !data[0].name) {
             navigate('/link-steam')
           } else {
             navigate('/dashboard')
@@ -65,10 +61,28 @@ const Login = () => {
   })
 
   return (
-    <div>
-      <button onClick={() => onLoginClicked()}>Login with Google</button>
-    </div>
+    <section className="flex h-screen">
+      <div class="m-auto text-center">
+        <h1 className="text-white text-8xl pb-[25px]">Next Game</h1>
+        <button
+          className="btn-google-sso text-center"
+          onClick={() => onLoginClicked()}
+        >
+          Sign in with Google
+        </button>
+      </div>
+
+      {particles.map((particle) => particle)}
+    </section>
   )
+}
+
+const createNewUser = async (userData) => {
+  axios
+    .post(`${process.env.REACT_APP_BACKEND_API}/user/`, userData)
+    .then(() => {
+      return new Promise((resolve) => resolve())
+    })
 }
 
 export default Login

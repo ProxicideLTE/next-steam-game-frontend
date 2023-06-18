@@ -1,46 +1,81 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react'
 
+import storage from '../util/util.local-storage'
+import Header from '../Components/Header'
 import Game from '../Components/Game'
+import NoLogin from '../Components/NoLogin'
+import LoginError from '../Components/LoginError'
+
+import USER_STATE_ENUM from '../util/util.user-state'
 
 const Dashboard = () => {
   const [userGames, setUserGames] = useState([])
+  const [userState, setUserState] = useState('')
+
+  document.body.classList.remove('login')
 
   useEffect(() => {
-    const userID = getUserID()
+    const userID = storage.getUserID()
+
+    // User not signed in.
+    if (!userID) {
+      setUserState(USER_STATE_ENUM.USER_NOT_SIGNED_IN)
+      return
+    }
 
     axios
       .get(`${process.env.REACT_APP_BACKEND_API}/user/${userID}`)
       .then((response) => {
         if (response.data.length === 0) {
-          return
+          return new Promise((resolve, reject) => {
+            reject({
+              error: USER_STATE_ENUM.USER_NOT_FOUND,
+            })
+          })
+        } else if (!response.data[0].steam_id) {
+          return new Promise((resolve, reject) => {
+            reject({
+              error: USER_STATE_ENUM.USER_NOT_FOUND,
+            })
+          })
+        } else {
+          return axios.get(
+            `${process.env.REACT_APP_BACKEND_API}/user/games/${response.data[0].steam_id}`
+          )
         }
-
-        return axios.get(
-          `${process.env.REACT_APP_BACKEND_API}/user/games/${response.data[0].steam_id}`
-        )
       })
       .then((response) => {
         setUserGames(response.data.response.games)
       })
+      .catch(({ error }) => {
+        setUserState(error)
+      })
   }, [])
 
-  return (
-    <div className="grid grid-cols-3 gap-4">
-      {userGames.map((game) => (
-        <Game
-          key={game.appid}
-          appid={game.appid}
-          name={game.name}
-          playtime={game.playtime_forever}
-        ></Game>
-      ))}
-    </div>
-  )
-}
+  switch (userState) {
+    case USER_STATE_ENUM.USER_NOT_SIGNED_IN:
+      return <NoLogin />
+    case USER_STATE_ENUM.USER_NOT_FOUND:
+      return <LoginError />
+    default:
+      return (
+        <>
+          <Header />
 
-const getUserID = () => {
-  return JSON.parse(localStorage.getItem('google-account')).id
+          <section className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-4 p-[20px]">
+            {userGames.map((game) => (
+              <Game
+                key={game.appid}
+                appid={game.appid}
+                name={game.name}
+                playtime={game.playtime_forever}
+              ></Game>
+            ))}
+          </section>
+        </>
+      )
+  }
 }
 
 export default Dashboard
