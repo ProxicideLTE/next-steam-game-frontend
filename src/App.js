@@ -1,7 +1,7 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./Pages/Login";
-import LinkSteam from "./Pages/LinkSteam";
-import Dashboard from "./Pages/Dashboard";
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Login from './Pages/Login'
+import LinkSteam from './Pages/LinkSteam'
+import Dashboard from './Pages/Dashboard'
 
 function App() {
   return (
@@ -12,7 +12,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />}></Route>
       </Routes>
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App
