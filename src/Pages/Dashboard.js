@@ -1,70 +1,46 @@
-import { useState, useEffect } from "react";
+import axios from 'axios'
+import { useState, useEffect } from 'react'
+
+import Game from '../Components/Game'
 
 const Dashboard = () => {
-  const [userGames, setUserGames] = useState([]);
+  const [userGames, setUserGames] = useState([])
 
   useEffect(() => {
-    // const userID = new URLSearchParams(window.location.search).get('userID')
-    // fetch(`http://localhost:3001/user/${userID}`)
-    // .then(response => {
-    //   return response.json()
-    // })
-    // .then(response => {
-    //   return fetch(`http://localhost:3001/user/games/${userID}`)
-    //   // if (response[0].id != userID) {
-    //   // }
-    // })
-    // .then(response => {
-    //   return response.json()
-    // })
-    // .then(response => {
-    //   setUserGames(response.games)
-    // })
-    // if (!userID) {
-    //   setUserGames([])
-    //   return;
-    // }
-    // fetch(`http://localhost:3001/user/games/${userID}`)
-    // .then(response => {
-    //   return response.json()
-    // })
-    // .then(response => {
-    //   setUserGames(response.games)
-    // })
-  }, []);
+    const userID = getUserID()
 
-  const onBeatedClicked = async (event, gameID) => {
-    let gamesCopy = [...userGames];
+    axios
+      .get(`${process.env.REACT_APP_BACKEND_API}/user/${userID}`)
+      .then((response) => {
+        if (response.data.length === 0) {
+          return
+        }
 
-    const game = gamesCopy.filter((game) => game.appid === gameID);
-    game[0].completed = event.target.checked;
-
-    setUserGames(gamesCopy);
-  };
+        return axios.get(
+          `${process.env.REACT_APP_BACKEND_API}/user/games/${response.data[0].steam_id}`
+        )
+      })
+      .then((response) => {
+        setUserGames(response.data.response.games)
+      })
+  }, [])
 
   return (
     <div className="grid grid-cols-3 gap-4">
       {userGames.map((game) => (
-        <div
-          className={`ease p-[10px] border-solid rounded-md border-2 ${
-            game.completed ? "border-green-400" : "border-black"
-          }`}
+        <Game
           key={game.appid}
-        >
-          <h2 className="font-bold">{game.name}</h2>
-          <p>Total Playtime: {(game.playtime_forever / 60).toFixed(1)} hours</p>
-          <input
-            type="checkbox"
-            id={game.appid}
-            name={game.appid}
-            onChange={(event) => onBeatedClicked(event, game.appid)}
-          />
-          &nbsp;
-          <label htmlFor={game.appid}>Complete</label>
-        </div>
+          appid={game.appid}
+          name={game.name}
+          playtime={game.playtime_forever}
+        ></Game>
       ))}
     </div>
-  );
-};
+  )
+}
 
-export default Dashboard;
+const getUserID = () => {
+  return JSON.parse(localStorage.getItem('google-account')).id
+}
+
+export default Dashboard
