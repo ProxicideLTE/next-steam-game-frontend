@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit'
-import userReducer from './user'
+import userGamesReducer from './user-games'
 
 export default configureStore({
   reducer: {
-    user: userReducer,
+    userGames: userGamesReducer,
   },
 })

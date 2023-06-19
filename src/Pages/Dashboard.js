@@ -1,18 +1,20 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 
+import { setUserGameList } from '../Data/user-games'
 import storage from '../util/util.local-storage'
 import Header from '../Components/Header'
-import Game from '../Components/Game'
+import GameTile from '../Components/GameTile'
 import NoLogin from '../Components/NoLogin'
 import LoginError from '../Components/LoginError'
 
 import USER_STATE_ENUM from '../util/util.user-state'
 
 const Dashboard = () => {
-  const [userGames, setUserGames] = useState([])
+  const dispatch = useDispatch()
   const [userState, setUserState] = useState('')
-
+  const { userGames } = useSelector((state) => state.userGames)
   document.body.classList.remove('login')
 
   useEffect(() => {
@@ -24,29 +26,27 @@ const Dashboard = () => {
       return
     }
 
+    // Get active user.
     axios
       .get(`${process.env.REACT_APP_BACKEND_API}/user/${userID}`)
       .then((response) => {
         if (response.data.length === 0) {
           return new Promise((resolve, reject) => {
-            reject({
-              error: USER_STATE_ENUM.USER_NOT_FOUND,
-            })
+            reject({ error: USER_STATE_ENUM.USER_NOT_FOUND })
           })
         } else if (!response.data[0].steam_id) {
           return new Promise((resolve, reject) => {
-            reject({
-              error: USER_STATE_ENUM.USER_NOT_FOUND,
-            })
+            reject({ error: USER_STATE_ENUM.USER_NOT_FOUND })
           })
         } else {
+          // Get the list of games the user has in their steam account.
           return axios.get(
             `${process.env.REACT_APP_BACKEND_API}/user/games/${response.data[0].steam_id}`
           )
         }
       })
-      .then((response) => {
-        setUserGames(response.data.response.games)
+      .then(({ data }) => {
+        dispatch(setUserGameList(data.response.games))
       })
       .catch(({ error }) => {
         setUserState(error)
@@ -65,12 +65,13 @@ const Dashboard = () => {
 
           <section className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-4 p-[20px]">
             {userGames.map((game) => (
-              <Game
+              <GameTile
                 key={game.appid}
                 appid={game.appid}
                 name={game.name}
                 playtime={game.playtime_forever}
-              ></Game>
+                completed={game.completed}
+              ></GameTile>
             ))}
           </section>
         </>

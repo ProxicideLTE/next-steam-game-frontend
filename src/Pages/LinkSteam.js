@@ -9,10 +9,9 @@ import ValidUser from '../Components/ValidUser'
 import USER_STATE_ENUM from '../util/util.user-state'
 
 const LinkSteam = () => {
+  document.body.classList.remove('login')
   const [userID, setUserID] = useState('')
   const [userState, setUserState] = useState('')
-
-  document.body.classList.remove('login')
 
   useEffect(() => {
     const id = storage.getUserID()
