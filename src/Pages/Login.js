@@ -62,14 +62,19 @@ const Login = () => {
 
   return (
     <section className="flex h-screen">
-      <div class="m-auto text-center">
-        <h1 className="text-white text-8xl pb-[25px]">Next Game</h1>
+      <div class="m-auto text-center px-[20px]">
+        <h1 className="font-bold text-white text-8xl pb-[25px]">Next Game</h1>
         <button
           className="btn-google-sso text-center"
           onClick={() => onLoginClicked()}
         >
           Sign in with Google
         </button>
+
+        <div className="m-auto pt-[50px] sm:w-[80%] md:w-[550px]">
+          Keep track of what Steam games you completed in your Steam game
+          library. And see how many hours you sinked into each game.
+        </div>
       </div>
 
       {particles.map((particle) => particle)}

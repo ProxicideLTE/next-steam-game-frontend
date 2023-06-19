@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 body {
-  background-color: #1B2838;
+  background-color: #1b2838;
   color: #ffffffd3;
   margin: 0;
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Motiva Sans', sans-serif;
 }
 
 a {
@@ -14,8 +14,7 @@ a {
   text-decoration: underline;
   transition: color 0.25s ease-in;
 
-
   &:hover {
-    color: #FF4500; 
+    color: #ff4500;
   }
 }
