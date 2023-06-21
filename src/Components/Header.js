@@ -14,7 +14,7 @@ const Header = () => {
   }
 
   return (
-    <header className="p-[20px] border-b-[1px]">
+    <header className="bg-[#171a21] p-[20px] fixed w-full">
       <nav>
         <button onClick={onLogout}>Logout</button>
       </nav>

@@ -63,7 +63,7 @@ const Dashboard = () => {
         <>
           <Header />
 
-          <section className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-4 p-[20px]">
+          <section className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-4 p-[20px] pt-[100px]">
             {userGames.map((game) => (
               <GameTile
                 key={game.appid}
