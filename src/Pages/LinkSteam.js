@@ -6,7 +6,7 @@ import NoLogin from '../Components/NoLogin'
 import LoginError from '../Components/LoginError'
 import ValidUser from '../Components/ValidUser'
 
-import USER_STATE_ENUM from '../util/util.user-state'
+import USER_ERROR_STATE_ENUM from '../util/util.user-state'
 
 const LinkSteam = () => {
   document.body.classList.remove('login')
@@ -18,7 +18,7 @@ const LinkSteam = () => {
 
     // User not signed in.
     if (!id) {
-      setUserState(USER_STATE_ENUM.USER_NOT_SIGNED_IN)
+      setUserState(USER_ERROR_STATE_ENUM.USER_NOT_SIGNED_IN)
       return
     }
 
@@ -26,25 +26,21 @@ const LinkSteam = () => {
 
     axios
       .get(`${process.env.REACT_APP_BACKEND_API}/user/${id}`)
-      .then((response) => {
-        // User not found.
-        if (response.data.length === 0) {
-          setUserState(USER_STATE_ENUM.USER_NOT_FOUND)
-          return
+      .then(({ data }) => {
+        if (!data.success) {
+          setUserState(USER_ERROR_STATE_ENUM.USER_NOT_FOUND)
+        } else if (data.message.steam_id) {
+          setUserState(USER_ERROR_STATE_ENUM.USER_VALID)
         }
-
-        // Valid user.
-        const profile = response.data[0]
-        if (profile.steam_id) setUserState(USER_STATE_ENUM.USER_VALID)
       })
   }, [])
 
   switch (userState) {
-    case USER_STATE_ENUM.USER_NOT_SIGNED_IN:
+    case USER_ERROR_STATE_ENUM.USER_NOT_SIGNED_IN:
       return <NoLogin />
-    case USER_STATE_ENUM.USER_NOT_FOUND:
+    case USER_ERROR_STATE_ENUM.USER_NOT_FOUND:
       return <LoginError />
-    case USER_STATE_ENUM.USER_VALID:
+    case USER_ERROR_STATE_ENUM.USER_VALID:
       return <ValidUser />
     default:
       return (

@@ -2,8 +2,9 @@ import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { useDispatch } from 'react-redux'
 
 import { setGameComplete, setGameIncomplete } from '../Data/user-games'
+import './GameTile.scss'
 
-const STEAM_IMAGE_HOST = 'https://cdn.akamai.steamstatic.com/steam/apps'
+const STEAM_IMAGE_HOST_URL = 'https://cdn.akamai.steamstatic.com/steam/apps'
 
 const GameTile = ({ appid, name, playtime, completed }) => {
   const dispatch = useDispatch()
@@ -20,11 +21,11 @@ const GameTile = ({ appid, name, playtime, completed }) => {
     <div
       className={`${
         completed ? 'completed border-[#5EB95E]' : 'border-[#999]'
-      } border-solid rounded-md border-4 ease duration-300`}
+      } game-tile relative border-solid rounded-md border-4 ease duration-300`}
     >
       <div>
         <LazyLoadImage
-          src={`${STEAM_IMAGE_HOST}/${appid}/header.jpg`}
+          src={`${STEAM_IMAGE_HOST_URL}/${appid}/header.jpg`}
           alt={name}
           className="w-full h-auto bg-[#171a21]"
         />

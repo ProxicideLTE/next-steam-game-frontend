@@ -1,0 +1,18 @@
+@import '../assets/variables.scss';
+
+$tile-size: 50px;
+
+.game-tile.completed {
+  &::before {
+    content: '✔';
+    background-color: $color-state-complete;
+    font-size: 30px;
+    text-align: center;
+    line-height: $tile-size;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: $tile-size;
+    height: $tile-size;
+  }
+}

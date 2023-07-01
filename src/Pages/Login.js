@@ -8,52 +8,70 @@ import storage from './../util/util.local-storage'
 const GOOGLE_API_HOST = 'https://www.googleapis.com/oauth2/v1/userinfo'
 const PARTICLES_COUNT = 100
 
-const Login = () => {
-  const navigate = useNavigate()
-  const particles = []
+/**
+ * Creates a new user record in the database.
+ * @param {Object} userData JSON object cotaining user ID and email.
+ */
+const createNewUser = async (userData) => {
+  axios
+    .post(`${process.env.REACT_APP_BACKEND_API}/user/`, userData)
+    .then(() => {
+      return new Promise((resolve) => resolve())
+    })
+}
 
-  document.querySelector('body').classList.add('login')
-
+/**
+ * Creates the particles effect on the login page.
+ * @param {Array} particles blank array that the particle elements will be pushed to
+ * @return {Array} of particle elements that will be animated on screen.
+ */
+const createParticles = (particlesList) => {
   for (let i = 0; i < PARTICLES_COUNT; i++) {
-    particles.push(
-      <div class="circle-container">
-        <div class="circle"></div>
+    particlesList.push(
+      <div key={i} className="circle-container">
+        <div className="circle"></div>
       </div>
     )
   }
 
+  return particlesList
+}
+
+/**
+ * Gets the user's Google information using the userinfo Google API.
+ * @param {String} accessToken access token to use with the Google API
+ * @returns {Object} JSON object containing the user's Google information
+ */
+const getGoogleUser = async (accessToken) => {
+  const user = await axios.get(
+    `${GOOGLE_API_HOST}?alt=json&access_token=${accessToken}`
+  )
+  return user.data
+}
+
+const Login = () => {
+  const navigate = useNavigate()
+  const particles = createParticles([])
+  document.querySelector('body').classList.add('login')
+
   const onLoginClicked = useGoogleLogin({
-    onSuccess: (response) => {
-      let userID, userEmail
+    onSuccess: async (response) => {
+      const user = await getGoogleUser(response.access_token)
+      const { id, email } = user
+      storage.storeUserID(id)
 
-      axios
-        .get(
-          `${GOOGLE_API_HOST}?alt=json&access_token=${response.access_token}`
-        )
-        .then(({ data }) => {
-          userID = data.id
-          userEmail = data.email
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_BACKEND_API}/user/${id}`
+      )
 
-          storage.storeUserID(userID)
-
-          return axios.get(
-            `${process.env.REACT_APP_BACKEND_API}/user/${userID}`
-          )
-        })
-        .then(({ data }) => {
-          if (data.length === 0) {
-            createNewUser({
-              id: userID,
-              email: userEmail,
-            })
-
-            navigate('/link-steam')
-          } else if (!data[0].steam_id && !data[0].name) {
-            navigate('/link-steam')
-          } else {
-            navigate('/dashboard')
-          }
-        })
+      if (!data.success) {
+        await createNewUser({ id, email })
+        navigate('/link-steam')
+      } else if (!data.message.steam_id && !data.message.name) {
+        navigate('/link-steam')
+      } else {
+        navigate('/dashboard')
+      }
     },
     onError: (res) => {
       console.log(res)
@@ -62,7 +80,7 @@ const Login = () => {
 
   return (
     <section className="flex h-screen">
-      <div class="m-auto text-center px-[20px]">
+      <div className="m-auto text-center px-[20px]">
         <h1 className="font-bold text-white text-8xl pb-[25px]">Next Game</h1>
         <button
           className="btn-google-sso text-center"
@@ -80,14 +98,6 @@ const Login = () => {
       {particles.map((particle) => particle)}
     </section>
   )
-}
-
-const createNewUser = async (userData) => {
-  axios
-    .post(`${process.env.REACT_APP_BACKEND_API}/user/`, userData)
-    .then(() => {
-      return new Promise((resolve) => resolve())
-    })
 }
 
 export default Login
