@@ -49,6 +49,7 @@ const GameTile = ({ appid, name, playtime, completed }) => {
             id={appid}
             name={appid}
             onChange={onCompletionChange}
+            defaultChecked={completed}
           />
           &nbsp;
           <label

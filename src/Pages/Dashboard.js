@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { setUserGameList, setUserSteamID } from '../Data/user-games'
+import { setUserSteamID, setUserGameList } from '../Data/user-games'
 import storage from '../util/util.local-storage'
 import Header from '../Components/Header'
 import GameTile from '../Components/GameTile'
@@ -19,6 +19,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const userID = storage.getUserID()
+    let userSteamID, completeGames
 
     // User not signed in.
     if (!userID) {
@@ -39,18 +40,36 @@ const Dashboard = () => {
             reject({ error: USER_ERROR_STATE_ENUM.USER_NOT_FOUND })
           })
         } else {
-          const steamID = data.message.steam_id
+          userSteamID = data.message.steam_id
 
           // Update store.
-          dispatch(setUserSteamID(steamID))
+          dispatch(setUserSteamID(userSteamID))
 
-          // Get the list of games the user has in their steam account.
+          // Get list of completed games.
           return axios.get(
-            `${process.env.REACT_APP_BACKEND_API}/user/games/${steamID}`
+            `${process.env.REACT_APP_BACKEND_API}/user/games/completed/${userID}`
           )
         }
       })
       .then(({ data }) => {
+        completeGames = data
+
+        // Get the list of games the user has in their steam account.
+        return axios.get(
+          `${process.env.REACT_APP_BACKEND_API}/user/games/${userSteamID}`
+        )
+      })
+      .then(({ data }) => {
+        data.message.games.forEach((game) => {
+          if (
+            completeGames.filter(
+              (completedGame) =>
+                parseInt(completedGame.gameAppID) === game.appid
+            ).length > 0
+          )
+            game.completed = true
+        })
+
         // Update store.
         dispatch(setUserGameList(data.message.games))
       })
